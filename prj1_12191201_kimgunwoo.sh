@@ -17,7 +17,7 @@ while true :
 do
         echo -n "Enter your choice [1 - 9] "
 	read choice
-
+	echo ""
 
 	if [ $choice = 9 ];
 	then
@@ -27,17 +27,20 @@ do
 
 	# choice 1
 	elif [ $choice = 1 ];						
-	then								               echo -n "Please enter 'movie id' (1~1672): "	                
+	then								               	      echo -n "Please enter 'movie id' (1~1672): "	                
 	read movieId
+	echo ""
 	awk -v L="$movieId" 'NR==L' u.item
 
 	# choice 2
 	elif [ $choice = 2 ];
 	then
 		echo -n "Do you want to get the data of 'action' genre movies from 'u.item'? (y/n): "		
-		read yn
+	
+	read yn
 		if [ "$yn" == "y" ];
 		then
+			echo ""
 			awk -F'|' '$7 == 1 {print $1" " $2;count++} count==10{exit} ' u.item	
 	fi
 
@@ -47,6 +50,7 @@ do
 		read ID
 		rr=0						
 		sum=0
+		echo ""
 		awk -v r="$ID" '$2==r {rr+=$3;sum++} END {print "average rating of" ID ": " rr/sum}' u.data
 
 
@@ -58,6 +62,7 @@ do
 	read yn
 	if [ "$yn" == "y" ];
 	then
+	echo ""
 		awk -F'|' '{print $1"|"$2"|"$3"|"$4"||"$6"|"$7"|"$8"|"$9"|"$10"|"$11"|"$12"|"$13"|"$14"|"$15"|"$16"|"$17"|"$18"|"$19"|"$20"|"$21"|"$22"|"$23"|"$24;sum++} sum==10{exit}' u.item
 		fi
 
@@ -68,7 +73,8 @@ do
 	read yn
 	if [ "$yn" == "y" ];
 	then
-		sed 's/^\([0-9]*\)|\([0-9]*\)|\([MF]\)|\([^|]*\)|\([0-9]*\)/user \1 is \2 years old \3 \4/' u.user | sed 's/M/male/; s/F/female/' |  head -n 10
+	echo ""
+	sed 's/^\([0-9]*\)|\([0-9]*\)|\([MF]\)|\([^|]*\)|\([0-9]*\)/user \1 is \2 years old \3 \4/' u.user | sed 's/M/male/; s/F/female/' |  head -n 10
 	fi
 
 	# choice 6
@@ -78,6 +84,7 @@ do
 	read yn
 	if [ "$yn" == "y" ];
 	then
+	echo ""
 	sed -n '1673,1682p' u.item | sed 's/\([0-9]\{2\}\)-\([a-zA-Z]\{3\}\)-\([0-9]\{4\}\)/\3\2\1/; s/Jan/01/; s/Feb/02/; s/Mar/03/; s/Apr/04/; s/May/05/; s/Jun/06/; s/Jul/07/; s/Aug/08/; s/Sep/09/; s/Oct/10/; s/Nov/11/; s/Dec/12/'
 	fi
 
@@ -86,6 +93,7 @@ do
 	then
 	echo -n "Please enter the 'user id'(1~943):"
 	read id
+	echo ""
 	awk -v L="$id" '$1 == L  {print $2}' u.data | sort -n | awk '{ORS ="|";print}' | sed 's/|$//'
 	echo ""
 	arr=()
@@ -113,15 +121,30 @@ do
 	read yn
 	if [ "$yn" == "y" ];
 	then
+	echo ""
 		arr=()
 		#get 20~29 and programmer
 		while read -r line; do
 		arr+=("$line")
 		done < <(awk -F '|' -v L="programmer" '$4 == L && $2 < 30 && $2 > 19 {print $1}' u.user)
-		for value in "${arr[@]}"; do
-			echo "$value"
-			done
+	declare -A numbersarr=()
+	declare -A scorearr=()
+	awk -v arr="${arr[*]}" 'BEGIN {split(arr, a, " ");}
+	    {
+	 for (i in a) {
+	 if ($1 == a[i]) {
+	 numbersarr[$2]++;
+	 scorearr[$2]+=$3;}}}
+	 END {
+	     for (i = 1; i <= 1683; i++) {
+	             if (i in numbersarr && numbersarr[i] != 0) {
+		                 printf "%d %.5 f\n",  i, scorearr[i] / numbersarr[i];
+				         }
+					     }
+					     }' u.data
+	 
 fi
 fi
 done
+
 
